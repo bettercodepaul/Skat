@@ -6,10 +6,16 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+permissions:
+  contents: read
+
 jobs:
   build-backend:
     runs-on: ubuntu-latest
     name: Build Backend
+    
+    permissions:
+      contents: read
     
     steps:
     - uses: actions/checkout@v4
@@ -40,6 +46,9 @@ jobs:
   build-frontend:
     runs-on: ubuntu-latest
     name: Build Frontend
+    
+    permissions:
+      contents: read
     
     steps:
     - uses: actions/checkout@v4

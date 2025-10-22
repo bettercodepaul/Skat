@@ -31,6 +31,13 @@ mvn spring-boot:run
 
 The backend will start on `http://localhost:8080`
 
+For development without PostgreSQL, you can use the H2 in-memory database:
+
+```bash
+cd backend
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
 ### API Endpoints
 
 - `GET /api/hello` - Returns "Hallo"
