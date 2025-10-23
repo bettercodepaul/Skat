@@ -13,6 +13,8 @@ This document specifies the **players listing endpoint** including parameters, v
 **Path**: `/api/players`
 **Content-Type**: `application/json` (response)
 
+IMPORTANT: If a new player has no score in the system yet, `current_total_points` and `current_sequence_index` should be returned as `0`.
+
 ### Query Parameters
 - `sort` *(optional, enum)* — allowed values:
   - `name` — sort by last name, then first name (ascending)
