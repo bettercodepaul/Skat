@@ -1,6 +1,8 @@
 package com.skat.backend.api.exception;
 
 import com.skat.backend.application.dto.ErrorResponseTO;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -63,6 +65,20 @@ public class GlobalExceptionHandler {
             "bad_request",
             ex.getMessage(),
             null
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponseTO> handleConstraintViolationException(ConstraintViolationException ex) {
+        ConstraintViolation<?> violation = ex.getConstraintViolations().iterator().next();
+        String propertyPath = violation.getPropertyPath().toString();
+        String field = propertyPath.contains(".") ? propertyPath.substring(propertyPath.lastIndexOf('.') + 1) : propertyPath;
+        
+        ErrorResponseTO error = new ErrorResponseTO(
+            "bad_request",
+            violation.getMessage(),
+            field
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
