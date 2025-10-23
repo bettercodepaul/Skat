@@ -1,96 +1,162 @@
-# Skat
+# Skat Backend
 
-A mono-repo project with Java 21 Spring Boot backend and Angular 18 frontend.
+Spring Boot REST API backend for the Skat application.
+
+## Technology Stack
+
+- **Java**: 21
+- **Spring Boot**: 3.5.6
+- **Database**: PostgreSQL (production), H2 (development)
+- **Build Tool**: Maven
+
+## Prerequisites
+
+- Java 21 or higher
+- Maven 3.6 or higher
+- PostgreSQL (for production mode)
+
+## Getting Started
+
+### Running with H2 In-Memory Database (Development)
+
+The easiest way to start the application for development is using the H2 in-memory database:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+The application will start on `http://localhost:8080`
+
+### Running with PostgreSQL (Production)
+
+1. Ensure PostgreSQL is running and create a database:
+   ```sql
+   CREATE DATABASE skatdb;
+   ```
+
+2. Update the database credentials in `src/main/resources/application.properties` if needed:
+   ```properties
+   spring.datasource.url=jdbc:postgresql://localhost:5432/skatdb
+   spring.datasource.username=postgres
+   spring.datasource.password=postgres
+   ```
+
+3. Start the application:
+   ```bash
+   mvn spring-boot:run
+   ```
+
+### Building the Application
+
+To build the application and create an executable JAR:
+
+```bash
+mvn clean package
+```
+
+The JAR file will be created in the `target/` directory.
+
+### Running the JAR
+
+After building, you can run the application using:
+
+```bash
+# With H2 (development)
+java -jar target/backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
+
+# With PostgreSQL (production)
+java -jar target/backend-0.0.1-SNAPSHOT.jar
+```
+
+## Running Tests
+
+Execute the test suite:
+
+```bash
+mvn test
+```
+
+## API Endpoints
+
+### Hello World Endpoint
+
+- **URL**: `/api/hello`
+- **Method**: `GET`
+- **Response**: Plain text "Hallo"
+
+Example:
+```bash
+curl http://localhost:8080/api/hello
+```
+
+## Configuration Profiles
+
+### Development Profile (`dev`)
+
+Uses H2 in-memory database. Configuration file: `application-dev.properties`
+
+- Database: H2 in-memory
+- H2 Console: Enabled at `/h2-console`
+- SQL logging: Enabled
+
+### Default Profile (Production)
+
+Uses PostgreSQL database. Configuration file: `application.properties`
+
+- Database: PostgreSQL
+- Connection pooling: HikariCP (default)
 
 ## Project Structure
 
 ```
-.
-├── backend/          # Spring Boot backend (Java 21)
-├── frontend/         # Angular 18 frontend
-└── .github/          # CI/CD workflows
-    └── workflows/
-        └── build.yml # Build pipeline
+backend/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/skat/backend/
+│   │   │       ├── SkatBackendApplication.java    # Main application class
+│   │   │       └── controller/
+│   │   │           └── HelloWorldController.java  # REST controller
+│   │   └── resources/
+│   │       ├── application.properties              # Production config
+│   │       └── application-dev.properties          # Development config
+│   └── test/
+│       └── java/
+│           └── com/skat/backend/
+│               └── controller/
+│                   └── HelloWorldControllerTest.java  # Controller tests
+├── pom.xml                                         # Maven configuration
+└── README.md                                       # This file
 ```
 
-## Backend
+## Troubleshooting
 
-### Technology Stack
-- Java 21
-- Spring Boot 3.4.2
-- PostgreSQL
-- Maven
+### Port Already in Use
 
-### Build and Run
+If port 8080 is already in use, you can change it by adding to your run command:
 
 ```bash
-cd backend
-mvn clean package
-mvn spring-boot:run
+mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 ```
 
-The backend will start on `http://localhost:8080`
+### Database Connection Issues
 
-For development without PostgreSQL, you can use the H2 in-memory database:
-
-```bash
-cd backend
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
-```
-
-### API Endpoints
-
-- `GET /api/hello` - Returns "Hallo"
-
-### Database Configuration
-
-PostgreSQL configuration is in `backend/src/main/resources/application.properties`:
-- URL: `jdbc:postgresql://localhost:5432/skatdb`
-- Username: `postgres`
-- Password: `postgres`
-
-## Frontend
-
-### Technology Stack
-- Angular 18
-- TypeScript
-- Node.js 20
-
-### Build and Run
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
-The frontend will start on `http://localhost:4200`
-
-### Features
-
-- Calls the backend `/api/hello` endpoint
-- Displays the response without formatting
-
-## Build Pipeline
-
-The project includes a GitHub Actions workflow that:
-- Builds the backend with Maven
-- Runs backend tests
-- Builds the frontend with npm
-- Uploads build artifacts
+- Verify PostgreSQL is running: `pg_isready`
+- Check PostgreSQL logs for connection errors
+- Verify database credentials in `application.properties`
 
 ## Development
 
-1. Start the backend:
-   ```bash
-   cd backend
-   mvn spring-boot:run
-   ```
+### Adding New Dependencies
 
-2. In a new terminal, start the frontend:
-   ```bash
-   cd frontend
-   npm start
-   ```
+Add dependencies to `pom.xml` and run:
 
-3. Open your browser at `http://localhost:4200`
+```bash
+mvn clean install
+```
+
+### Code Style
+
+The project follows standard Java coding conventions. Ensure your IDE is configured to use:
+- Tab size: 4 spaces
+- Charset: UTF-8

@@ -26,10 +26,10 @@ hs_err_pid*
 replay_pid*
 
 # Backend build artifacts
-backend/target/
-backend/.mvn/
-backend/mvnw
-backend/mvnw.cmd
+target/
+.mvn/
+mvnw
+mvnw.cmd
 
 # Frontend dependencies and build artifacts
 frontend/node_modules/
