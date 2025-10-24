@@ -1,6 +1,8 @@
 package com.skat.backend.domain.entities;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -12,6 +14,8 @@ import java.util.UUID;
         @Index(name = "game_played_at_IDX", columnList = "played_at")
     }
 )
+@Data
+@NoArgsConstructor
 public class GameEntity {
 
     @Id
@@ -42,71 +46,4 @@ public class GameEntity {
 
     @Column(name = "played_at", nullable = false)
     private OffsetDateTime playedAt;
-
-    public GameEntity() {
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public PlayerEntity getPlayer1() {
-        return player1;
-    }
-
-    public void setPlayer1(PlayerEntity player1) {
-        this.player1 = player1;
-    }
-
-    public PlayerEntity getPlayer2() {
-        return player2;
-    }
-
-    public void setPlayer2(PlayerEntity player2) {
-        this.player2 = player2;
-    }
-
-    public PlayerEntity getPlayer3() {
-        return player3;
-    }
-
-    public void setPlayer3(PlayerEntity player3) {
-        this.player3 = player3;
-    }
-
-    public PlayerEntity getMainPlayer() {
-        return mainPlayer;
-    }
-
-    public void setMainPlayer(PlayerEntity mainPlayer) {
-        this.mainPlayer = mainPlayer;
-    }
-
-    public Integer getBidValue() {
-        return bidValue;
-    }
-
-    public void setBidValue(Integer bidValue) {
-        this.bidValue = bidValue;
-    }
-
-    public Integer getScore() {
-        return score;
-    }
-
-    public void setScore(Integer score) {
-        this.score = score;
-    }
-
-    public OffsetDateTime getPlayedAt() {
-        return playedAt;
-    }
-
-    public void setPlayedAt(OffsetDateTime playedAt) {
-        this.playedAt = playedAt;
-    }
 }

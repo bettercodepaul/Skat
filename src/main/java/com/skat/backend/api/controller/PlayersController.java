@@ -5,6 +5,7 @@ import com.skat.backend.application.dto.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +19,8 @@ import java.util.UUID;
 @Validated
 public class PlayersController {
 
-    private final PlayersService playersService;
-
-    public PlayersController(PlayersService playersService) {
-        this.playersService = playersService;
-    }
+    @Autowired
+    private PlayersService playersService;
 
     @GetMapping
     public ResponseEntity<PlayerListResponseTO> listPlayers(

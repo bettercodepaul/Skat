@@ -4,6 +4,7 @@ import com.skat.backend.api.exception.ConflictException;
 import com.skat.backend.api.exception.NotFoundException;
 import com.skat.backend.application.dto.*;
 import com.skat.backend.domain.entities.PlayerEntity;
+import com.skat.backend.domain.entities.PlayerScoreEntity;
 import com.skat.backend.domain.repositories.GameRepository;
 import com.skat.backend.domain.repositories.PlayerRepository;
 import com.skat.backend.domain.repositories.PlayerScoreRepository;
@@ -14,11 +15,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 /**
@@ -281,18 +284,19 @@ class PlayersServiceTest {
         // Given
         PlayersQuery query = new PlayersQuery(0, 50, PlayersSort.NAME);
         
-        List<Object[]> mockResults = new ArrayList<>();
-        Object[] row1 = new Object[]{
-            UUID.randomUUID(),
-            "Anna",
-            "Schmidt",
-            100,
-            5,
-            java.sql.Timestamp.valueOf("2024-01-01 10:00:00")
-        };
-        mockResults.add(row1);
+        UUID playerId = UUID.randomUUID();
+        PlayerEntity player = new PlayerEntity("Anna", "Schmidt");
+        player.setId(playerId);
+        List<PlayerEntity> players = List.of(player);
 
-        when(playerRepository.findPlayersWithLatestScore("NAME", 0, 50)).thenReturn(mockResults);
+        PlayerScoreEntity score = new PlayerScoreEntity();
+        score.setPlayer(player);
+        score.setTotalPoints(100);
+        score.setSequenceIndex(5);
+        score.setCreatedAt(OffsetDateTime.now());
+
+        when(playerRepository.findAllOrderedByName(any())).thenReturn(players);
+        when(playerScoreRepository.findLatestScoresForPlayers(anyList())).thenReturn(List.of(score));
         when(playerRepository.count()).thenReturn(1L);
 
         // When
@@ -310,7 +314,8 @@ class PlayersServiceTest {
         assertThat(result.paging().total()).isEqualTo(1L);
         assertThat(result.sort()).isEqualTo(PlayersSort.NAME);
         
-        verify(playerRepository).findPlayersWithLatestScore("NAME", 0, 50);
+        verify(playerRepository).findAllOrderedByName(any());
+        verify(playerScoreRepository).findLatestScoresForPlayers(anyList());
         verify(playerRepository).count();
     }
 }

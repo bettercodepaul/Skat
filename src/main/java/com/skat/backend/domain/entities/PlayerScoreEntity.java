@@ -1,6 +1,8 @@
 package com.skat.backend.domain.entities;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -13,6 +15,8 @@ import java.util.UUID;
         @Index(name = "player_score_sequence_IDX", columnList = "sequence_index")
     }
 )
+@Data
+@NoArgsConstructor
 public class PlayerScoreEntity {
 
     @Id
@@ -35,55 +39,4 @@ public class PlayerScoreEntity {
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
-
-    public PlayerScoreEntity() {
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public PlayerEntity getPlayer() {
-        return player;
-    }
-
-    public void setPlayer(PlayerEntity player) {
-        this.player = player;
-    }
-
-    public GameEntity getGame() {
-        return game;
-    }
-
-    public void setGame(GameEntity game) {
-        this.game = game;
-    }
-
-    public Integer getSequenceIndex() {
-        return sequenceIndex;
-    }
-
-    public void setSequenceIndex(Integer sequenceIndex) {
-        this.sequenceIndex = sequenceIndex;
-    }
-
-    public Integer getTotalPoints() {
-        return totalPoints;
-    }
-
-    public void setTotalPoints(Integer totalPoints) {
-        this.totalPoints = totalPoints;
-    }
-
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 }

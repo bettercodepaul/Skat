@@ -4,63 +4,89 @@ import com.skat.backend.api.exception.ConflictException;
 import com.skat.backend.api.exception.NotFoundException;
 import com.skat.backend.application.dto.*;
 import com.skat.backend.domain.entities.PlayerEntity;
+import com.skat.backend.domain.entities.PlayerScoreEntity;
 import com.skat.backend.domain.repositories.GameRepository;
 import com.skat.backend.domain.repositories.PlayerRepository;
 import com.skat.backend.domain.repositories.PlayerScoreRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigInteger;
-import java.sql.Timestamp;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PlayersServiceImpl implements PlayersService {
 
-    private final PlayerRepository playerRepository;
-    private final GameRepository gameRepository;
-    private final PlayerScoreRepository playerScoreRepository;
+    @Autowired
+    private PlayerRepository playerRepository;
 
-    public PlayersServiceImpl(PlayerRepository playerRepository,
-                              GameRepository gameRepository,
-                              PlayerScoreRepository playerScoreRepository) {
-        this.playerRepository = playerRepository;
-        this.gameRepository = gameRepository;
-        this.playerScoreRepository = playerScoreRepository;
-    }
+    @Autowired
+    private GameRepository gameRepository;
+
+    @Autowired
+    private PlayerScoreRepository playerScoreRepository;
 
     @Override
     @Transactional(readOnly = true)
     public PlayerListResponseTO listPlayers(PlayersQuery query) {
-        String sortValue = query.sort().name();
-        List<Object[]> results = playerRepository.findPlayersWithLatestScore(
-            sortValue, 
-            query.startIndex(), 
-            query.pageSize()
-        );
+        Pageable pageable = PageRequest.of(query.startIndex() / query.pageSize(), query.pageSize());
         
-        List<PlayerWithScoreTO> items = new ArrayList<>();
-        for (Object[] row : results) {
-            UUID id = row[0] instanceof UUID ? (UUID) row[0] : UUID.fromString(row[0].toString());
-            String firstName = (String) row[1];
-            String lastName = (String) row[2];
-            int totalPoints = row[3] instanceof Number ? ((Number) row[3]).intValue() : 0;
-            int sequenceIndex = row[4] instanceof Number ? ((Number) row[4]).intValue() : 0;
-            
-            OffsetDateTime updatedAt;
-            if (row[5] instanceof Timestamp) {
-                updatedAt = ((Timestamp) row[5]).toInstant().atZone(ZoneId.systemDefault()).toOffsetDateTime();
-            } else if (row[5] instanceof OffsetDateTime) {
-                updatedAt = (OffsetDateTime) row[5];
-            } else {
-                updatedAt = OffsetDateTime.now();
+        // Fetch players based on sort
+        List<PlayerEntity> players;
+        if (query.sort() == PlayersSort.NAME) {
+            players = playerRepository.findAllOrderedByName(pageable);
+        } else {
+            players = playerRepository.findAllPlayers(pageable);
+        }
+        
+        // Extract player IDs
+        List<UUID> playerIds = players.stream()
+            .map(PlayerEntity::getId)
+            .collect(Collectors.toList());
+        
+        // Fetch latest scores for these players
+        Map<UUID, PlayerScoreEntity> latestScores = new HashMap<>();
+        if (!playerIds.isEmpty()) {
+            List<PlayerScoreEntity> scores = playerScoreRepository.findLatestScoresForPlayers(playerIds);
+            for (PlayerScoreEntity score : scores) {
+                if (score.getPlayer() != null) {
+                    latestScores.put(score.getPlayer().getId(), score);
+                }
             }
-            
-            items.add(new PlayerWithScoreTO(id, firstName, lastName, totalPoints, sequenceIndex, updatedAt));
+        }
+        
+        // Map to DTOs
+        List<PlayerWithScoreTO> items = players.stream()
+            .map(player -> {
+                PlayerScoreEntity score = latestScores.get(player.getId());
+                int totalPoints = score != null ? score.getTotalPoints() : 0;
+                int sequenceIndex = score != null ? score.getSequenceIndex() : 0;
+                OffsetDateTime updatedAt = score != null ? score.getCreatedAt() : OffsetDateTime.now();
+                
+                return new PlayerWithScoreTO(
+                    player.getId(),
+                    player.getFirstName(),
+                    player.getLastName(),
+                    totalPoints,
+                    sequenceIndex,
+                    updatedAt
+                );
+            })
+            .collect(Collectors.toList());
+        
+        // Sort by score if needed
+        if (query.sort() == PlayersSort.SCORE_DESC) {
+            items.sort((a, b) -> {
+                int scoreCompare = Integer.compare(b.current_total_points(), a.current_total_points());
+                if (scoreCompare != 0) return scoreCompare;
+                int lastNameCompare = a.last_name().compareTo(b.last_name());
+                if (lastNameCompare != 0) return lastNameCompare;
+                return a.first_name().compareTo(b.first_name());
+            });
         }
         
         long total = playerRepository.count();

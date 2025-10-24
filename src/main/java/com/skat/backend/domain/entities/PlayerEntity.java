@@ -1,6 +1,9 @@
 package com.skat.backend.domain.entities;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import java.util.UUID;
 
 @Entity
@@ -14,6 +17,9 @@ import java.util.UUID;
         @Index(name = "player_last_name_IDX", columnList = "last_name")
     }
 )
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class PlayerEntity {
 
     @Id
@@ -26,35 +32,8 @@ public class PlayerEntity {
     @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
 
-    public PlayerEntity() {
-    }
-
     public PlayerEntity(String firstName, String lastName) {
         this.firstName = firstName;
-        this.lastName = lastName;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
         this.lastName = lastName;
     }
 }
