@@ -3,6 +3,7 @@ package com.skat.backend.api.controller;
 import com.skat.backend.application.dto.ErrorResponseTO;
 import com.skat.backend.application.dto.PlayerListResponseTO;
 import com.skat.backend.application.dto.PlayerTO;
+import com.skat.backend.config.PostgresTestcontainersConfig;
 import com.skat.backend.domain.entities.GameEntity;
 import com.skat.backend.domain.entities.PlayerEntity;
 import com.skat.backend.domain.entities.PlayerScoreEntity;
@@ -14,16 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -31,25 +29,14 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration test for PlayersController following ADR-001 and ADR-008.
- * Uses Testcontainers for PostgreSQL 18 and TestRestTemplate for testing the full application context.
+ * Integration test for PlayersController following ADR-001, ADR-008, and ADR-012.
+ * Uses Testcontainers with PostgreSQL 18, TestRestTemplate for testing the full application context,
+ * and Flyway for database migrations.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Testcontainers
+@Import(PostgresTestcontainersConfig.class)
+@ActiveProfiles("test")
 class PlayersControllerIT {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18")
-        .withDatabaseName("skatdb")
-        .withUsername("test")
-        .withPassword("test");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
 
     @Autowired
     private TestRestTemplate restTemplate;
