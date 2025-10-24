@@ -29,11 +29,7 @@ jobs:
 
     - name: Build Backend with Maven
       run: |
-        mvn clean package -DskipTests
-
-    - name: Run Backend Tests
-      run: |
-        mvn test
+        mvn clean verify  --no-transfer-progress
 
     - name: Upload Backend Artifacts
       uses: actions/upload-artifact@v4
