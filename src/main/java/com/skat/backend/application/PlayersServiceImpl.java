@@ -33,7 +33,7 @@ public class PlayersServiceImpl implements PlayersService {
     @Override
     @Transactional(readOnly = true)
     public PlayerListResponseTO listPlayers(PlayersQuery query) {
-        Pageable pageable = PageRequest.of(query.startIndex() / query.pageSize(), query.pageSize());
+        var pageable = PageRequest.of(query.startIndex() / query.pageSize(), query.pageSize());
         
         // Fetch players based on sort
         List<PlayerEntity> players;
@@ -44,15 +44,15 @@ public class PlayersServiceImpl implements PlayersService {
         }
         
         // Extract player IDs
-        List<UUID> playerIds = players.stream()
+        var playerIds = players.stream()
             .map(PlayerEntity::getId)
             .collect(Collectors.toList());
         
         // Fetch latest scores for these players
-        Map<UUID, PlayerScoreEntity> latestScores = new HashMap<>();
+        var latestScores = new HashMap<UUID, PlayerScoreEntity>();
         if (!playerIds.isEmpty()) {
-            List<PlayerScoreEntity> scores = playerScoreRepository.findLatestScoresForPlayers(playerIds);
-            for (PlayerScoreEntity score : scores) {
+            var scores = playerScoreRepository.findLatestScoresForPlayers(playerIds);
+            for (var score : scores) {
                 if (score.getPlayer() != null) {
                     latestScores.put(score.getPlayer().getId(), score);
                 }
@@ -60,12 +60,12 @@ public class PlayersServiceImpl implements PlayersService {
         }
         
         // Map to DTOs
-        List<PlayerWithScoreTO> items = players.stream()
+        var items = players.stream()
             .map(player -> {
-                PlayerScoreEntity score = latestScores.get(player.getId());
-                int totalPoints = score != null ? score.getTotalPoints() : 0;
-                int sequenceIndex = score != null ? score.getSequenceIndex() : 0;
-                OffsetDateTime updatedAt = score != null ? score.getCreatedAt() : OffsetDateTime.now();
+                var score = latestScores.get(player.getId());
+                var totalPoints = score != null ? score.getTotalPoints() : 0;
+                var sequenceIndex = score != null ? score.getSequenceIndex() : 0;
+                var updatedAt = score != null ? score.getCreatedAt() : OffsetDateTime.now();
                 
                 return new PlayerWithScoreTO(
                     player.getId(),
@@ -81,16 +81,16 @@ public class PlayersServiceImpl implements PlayersService {
         // Sort by score if needed
         if (query.sort() == PlayersSort.SCORE_DESC) {
             items.sort((a, b) -> {
-                int scoreCompare = Integer.compare(b.current_total_points(), a.current_total_points());
+                var scoreCompare = Integer.compare(b.current_total_points(), a.current_total_points());
                 if (scoreCompare != 0) return scoreCompare;
-                int lastNameCompare = a.last_name().compareTo(b.last_name());
+                var lastNameCompare = a.last_name().compareTo(b.last_name());
                 if (lastNameCompare != 0) return lastNameCompare;
                 return a.first_name().compareTo(b.first_name());
             });
         }
         
-        long total = playerRepository.count();
-        PagingTO paging = new PagingTO(query.startIndex(), query.pageSize(), total);
+        var total = playerRepository.count();
+        var paging = new PagingTO(query.startIndex(), query.pageSize(), total);
         
         return new PlayerListResponseTO(items, paging, query.sort());
     }
@@ -98,8 +98,8 @@ public class PlayersServiceImpl implements PlayersService {
     @Override
     @Transactional
     public PlayerTO createPlayer(UpsertPlayerRequest request) {
-        String firstName = request.first_name().trim();
-        String lastName = request.last_name().trim();
+        var firstName = request.first_name().trim();
+        var lastName = request.last_name().trim();
         
         if (playerRepository.existsByFirstNameIgnoreCaseAndLastNameIgnoreCase(firstName, lastName)) {
             throw new ConflictException(
@@ -108,7 +108,7 @@ public class PlayersServiceImpl implements PlayersService {
             );
         }
         
-        PlayerEntity player = new PlayerEntity(firstName, lastName);
+        var player = new PlayerEntity(firstName, lastName);
         player = playerRepository.save(player);
         
         return new PlayerTO(player.getId(), player.getFirstName(), player.getLastName());
@@ -117,11 +117,11 @@ public class PlayersServiceImpl implements PlayersService {
     @Override
     @Transactional
     public PlayerTO updatePlayer(UUID id, UpsertPlayerRequest request) {
-        PlayerEntity player = playerRepository.findById(id)
+        var player = playerRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Player not found", "id"));
         
-        String firstName = request.first_name().trim();
-        String lastName = request.last_name().trim();
+        var firstName = request.first_name().trim();
+        var lastName = request.last_name().trim();
         
         // Check if the new name conflicts with another player
         if (playerRepository.existsByFirstNameIgnoreCaseAndLastNameIgnoreCaseAndIdNot(firstName, lastName, id)) {
@@ -141,12 +141,12 @@ public class PlayersServiceImpl implements PlayersService {
     @Override
     @Transactional
     public void deletePlayer(UUID id, boolean forceDeletion) {
-        PlayerEntity player = playerRepository.findById(id)
+        var player = playerRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Player not found", "id"));
         
         if (!forceDeletion) {
-            boolean hasGames = gameRepository.existsByPlayerId(id);
-            boolean hasScores = playerScoreRepository.existsByPlayerId(id);
+            var hasGames = gameRepository.existsByPlayerId(id);
+            var hasScores = playerScoreRepository.existsByPlayerId(id);
             
             if (hasGames || hasScores) {
                 throw new ConflictException("Player is referenced in games or scores");
