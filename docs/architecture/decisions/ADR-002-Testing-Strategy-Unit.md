@@ -80,6 +80,7 @@ class ScoreServiceTest {
   - Deterministic business rules, pure functions, simple orchestrations.
   - Behavior that can be isolated with mocks **without** relying on Spring.
 - **Choose Integration (Failsafe + @SpringBootTest + Testcontainers)** when testing:
+- ** Avooid using 
   - Spring DI, configuration, serialization, validation, repositories, transactions.
   - HTTP layer behavior, real database interactions, or cross-cutting concerns.
 

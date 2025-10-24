@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin(origins = "*")
 public class HelloWorldController {
 
-    private final GreetingService greetingService;
+	private final GreetingService greetingService;
 
-    public HelloWorldController(GreetingService greetingService) {
-        this.greetingService = greetingService;
-    }
+	public HelloWorldController(GreetingService greetingService) {
+		this.greetingService = greetingService;
+	}
 
-    @GetMapping("/hello")
-    public String hello() {
-        return greetingService.generateGreeting();
-    }
+	@GetMapping("/hello")
+	public String hello() {
+		return greetingService.generateGreeting();
+	}
 }
