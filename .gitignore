@@ -39,3 +39,4 @@ frontend/.angular/
 .classpath
 .project
 .settings
+/.factorypath
